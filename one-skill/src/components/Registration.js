@@ -7,7 +7,7 @@ const Registration = () => {
   const [currentScreen, setCurrentScreen] = useState(1);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [phone, setPhone] = useState("");
+  const [mobile, setMobile] = useState("");
   const [password, setPassword] = useState("");
   const [gender, setGender] = useState("");
   const [dob, setDob] = useState(null);
@@ -34,7 +34,7 @@ const Registration = () => {
       name,
       email,
       password,
-      mobile: phone,
+      mobile,
       dob: formattedDob,
       gender,
       skills: {
@@ -50,7 +50,7 @@ const Registration = () => {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:5000/jobSeekerRegistartion",
+        "http://127.0.0.1:5000/jobSeekerRegistration",
         {
           method: "POST",
           headers: {
@@ -117,8 +117,8 @@ const Registration = () => {
           type="tel"
           id="phone"
           className="w-full p-3 border border-gray-300 rounded-lg"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
+          value={mobile}
+          onChange={(e) => setMobile(e.target.value)}
           required
         />
       </div>
@@ -285,7 +285,6 @@ const Registration = () => {
           Current Salary:
         </label>
         <input
-          type="number"
           id="current_ctc"
           className="w-full p-3 border border-gray-300 rounded-lg"
           value={current_ctc}
@@ -301,7 +300,6 @@ const Registration = () => {
           Expected Salary:
         </label>
         <input
-          type="number"
           id="expected_ctc"
           className="w-full p-3 border border-gray-300 rounded-lg"
           value={expected_ctc}
@@ -326,7 +324,7 @@ const Registration = () => {
     setShowModal(false);
   };
   return (
-    <div className="w-100 mx-auto mt-10 p-8 border border-gray-300 rounded-lg shadow-lg bg-lightblue">
+    <div className="w-8/12 mx-auto mt-10 p-8 border border-gray-300 rounded-lg shadow-lg bg-lightblue">
       <h2 className="text-3xl font-bold mb-6 text-center">Registration Form</h2>
       {message && <p className="mb-4 text-center text-green-500">{message}</p>}
       <form onSubmit={handleSubmit}>
