@@ -1,51 +1,48 @@
 import React, { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import SuccessModal from "./SuccessModal";
 
 const Registration = () => {
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+    trigger,
+  } = useForm();
   const [currentScreen, setCurrentScreen] = useState(1);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [mobile, setMobile] = useState("");
-  const [password, setPassword] = useState("");
-  const [gender, setGender] = useState("");
-  const [dob, setDob] = useState(null);
-  const [experience, setExperience] = useState("");
-  const [majorSkill, setMajorSkill] = useState("");
-  const [minorSkills, setMinorSkills] = useState([]);
-  const [current_ctc, setCurrentCTC] = useState("");
-  const [expected_ctc, setExpectedCTC] = useState("");
-  const [jobRole, setJobRole] = useState("");
-  const [image, setImage] = useState("");
+
+  const [minorSkills, setMinorSkills] = useState([""]);
   const [acknowledged, setAcknowledged] = useState(false);
   const [message, setMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
-
-  const handleAddMinorSkill = (e) => {
-    e.preventDefault();
+  const handleAddMinorSkill = () => {
     setMinorSkills([...minorSkills, ""]);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const formattedDob = dob ? dob.toLocaleDateString("en-GB") : "";
-    const data = {
-      name,
-      email,
-      password,
-      mobile,
+  const calculateAge = (dob) => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const onSubmit = async (data) => {
+    const formattedDob = data.dob ? data.dob.toLocaleDateString("en-GB") : "";
+    const requestData = {
+      ...data,
       dob: formattedDob,
-      gender,
+      mobile: data.mobile.toString(),
       skills: {
-        major: majorSkill,
-        minors: minorSkills,
+        major: data.majorSkill || "",
+        minors: data.minorSkills || [""],
       },
-      experience,
-      jobRole,
-      image,
-      current_ctc,
-      expected_ctc,
     };
 
     try {
@@ -56,7 +53,7 @@ const Registration = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(data),
+          body: JSON.stringify(requestData),
         }
       );
       const result = await response.json();
@@ -84,11 +81,14 @@ const Registration = () => {
         <input
           type="text"
           id="name"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.name ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("name", { required: "Name is required" })}
         />
+        {errors.name && (
+          <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+        )}
       </div>
       <div className="mb-4">
         <label
@@ -100,11 +100,20 @@ const Registration = () => {
         <input
           type="email"
           id="email"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.email ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("email", {
+            required: "Email is required",
+            pattern: {
+              value: /^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$/,
+              message: "Invalid email address",
+            },
+          })}
         />
+        {errors.email && (
+          <p className="text-red-500 text-sm mt-1">{errors.email.message}</p>
+        )}
       </div>
       <div className="mb-4">
         <label
@@ -116,11 +125,20 @@ const Registration = () => {
         <input
           type="tel"
           id="phone"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={mobile}
-          onChange={(e) => setMobile(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.mobile ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("mobile", {
+            required: "Phone number is required",
+            pattern: {
+              value: /^\d{10}$/,
+              message: "Invalid phone number",
+            },
+          })}
         />
+        {errors.mobile && (
+          <p className="text-red-500 text-sm mt-1">{errors.mobile.message}</p>
+        )}
       </div>
       <div className="mb-4">
         <label
@@ -132,11 +150,20 @@ const Registration = () => {
         <input
           type="password"
           id="password"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.password ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("password", {
+            required: "Password is required",
+            minLength: {
+              value: 5,
+              message: "Password must be at least 5 characters long",
+            },
+          })}
         />
+        {errors.password && (
+          <p className="text-red-500 text-sm mt-1">{errors.password.message}</p>
+        )}
       </div>
     </div>
   );
@@ -152,32 +179,54 @@ const Registration = () => {
         </label>
         <select
           id="gender"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={gender}
-          onChange={(e) => setGender(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.gender ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("gender", { required: "Gender is required" })}
         >
           <option value="">Select</option>
           <option value="male">Male</option>
           <option value="female">Female</option>
           <option value="other">Other</option>
         </select>
+        {errors.gender && (
+          <p className="text-red-500 text-sm mt-1">{errors.gender.message}</p>
+        )}
       </div>
       <div className="mb-4">
         <label htmlFor="dob" className="block text-gray-700 font-semibold mb-2">
           Date of Birth:
         </label>
-        <DatePicker
-          id="dob"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          selected={dob}
-          onChange={(date) => setDob(date)}
-          dateFormat="dd-MM-yyyy"
-          showMonthDropdown
-          showYearDropdown
-          dropdownMode="select"
-          required
+        <Controller
+          control={control}
+          name="dob"
+          rules={{
+            required: "Date of Birth is required",
+            validate: (value) => {
+              const age = calculateAge(value);
+              return (
+                (age >= 21 && age <= 30) || "Age must be between 21 and 30"
+              );
+            },
+          }}
+          render={({ field }) => (
+            <DatePicker
+              id="dob"
+              className={`w-full p-3 border ${
+                errors.dob ? "border-red-500" : "border-gray-300"
+              } rounded-lg`}
+              selected={field.value}
+              onChange={(date) => field.onChange(date)}
+              dateFormat="dd-MM-yyyy"
+              showMonthDropdown
+              showYearDropdown
+              dropdownMode="select"
+            />
+          )}
         />
+        {errors.dob && (
+          <p className="text-red-500 text-sm mt-1">{errors.dob.message}</p>
+        )}
       </div>
       <div className="mb-4">
         <label
@@ -188,11 +237,12 @@ const Registration = () => {
         </label>
         <select
           id="experience"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={experience}
-          onChange={(e) => setExperience(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.experience ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("experience")}
         >
+          <option value="">Select</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
@@ -209,31 +259,30 @@ const Registration = () => {
         <input
           type="text"
           id="majorSkill"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={majorSkill}
-          onChange={(e) => setMajorSkill(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.majorSkill ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("majorSkill")}
         />
       </div>
       <div className="mb-4">
         <label className="block text-gray-700 font-semibold mb-2">
           Minor Skills:
         </label>
-        {minorSkills.map((skill, index) => (
+        {minorSkills.map((_, index) => (
           <input
             key={index}
             type="text"
-            className="w-full p-3 border border-gray-300 rounded-lg mb-2"
-            value={skill}
-            onChange={(e) => {
-              const updatedSkills = [...minorSkills];
-              updatedSkills[index] = e.target.value;
-              setMinorSkills(updatedSkills);
-            }}
-            required
+            className={`w-full p-3 border ${
+              errors.minorSkills && errors.minorSkills[index]
+                ? "border-red-500"
+                : "border-gray-300"
+            } rounded-lg mb-2`}
+            {...register(`minorSkills.${index}`)}
           />
         ))}
         <button
+          type="button"
           className="bg-blue-500 text-white py-2 px-4 rounded-lg"
           onClick={handleAddMinorSkill}
         >
@@ -250,15 +299,15 @@ const Registration = () => {
           htmlFor="jobRole"
           className="block text-gray-700 font-semibold mb-2"
         >
-          Current job role:
+          Job Role:
         </label>
         <input
           type="text"
           id="jobRole"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={jobRole}
-          onChange={(e) => setJobRole(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.jobRole ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("jobRole")}
         />
       </div>
       <div className="mb-4">
@@ -271,10 +320,10 @@ const Registration = () => {
         <input
           type="text"
           id="image"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.image ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("image")}
         />
       </div>
       <div className="mb-4">
@@ -285,11 +334,12 @@ const Registration = () => {
           Current Salary:
         </label>
         <input
+          type="text"
           id="current_ctc"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={current_ctc}
-          onChange={(e) => setCurrentCTC(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.current_ctc ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("current_ctc")}
         />
       </div>
       <div className="mb-4">
@@ -300,66 +350,182 @@ const Registration = () => {
           Expected Salary:
         </label>
         <input
+          type="text"
           id="expected_ctc"
-          className="w-full p-3 border border-gray-300 rounded-lg"
-          value={expected_ctc}
-          onChange={(e) => setExpectedCTC(e.target.value)}
-          required
+          className={`w-full p-3 border ${
+            errors.expected_ctc ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("expected_ctc")}
         />
-      </div>
-      <div className="mb-4">
-        <label className="block text-gray-700 font-semibold mb-2">
-          <input
-            type="checkbox"
-            checked={acknowledged}
-            onChange={(e) => setAcknowledged(e.target.checked)}
-            required
-          />{" "}
-          I acknowledge the information provided is correct.
-        </label>
       </div>
     </div>
   );
+  const renderScreenFour = () => (
+    <div>
+      <div className="mb-4">
+        <label
+          htmlFor="linkedin"
+          className="block text-gray-700 font-semibold mb-2"
+        >
+          LinkedIn Link:
+        </label>
+        <input
+          type="text"
+          id="linkedin"
+          className={`w-full p-3 border ${
+            errors.linkedin ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("linkedin", {
+            validate: (value) =>
+              !value ||
+              /^(https?:\/\/)?([\w\d]+\.)?linkedin\.com\/.*$/.test(value) ||
+              "Invalid LinkedIn URL",
+          })}
+        />
+        {errors.linkedin && (
+          <p className="text-red-500 text-sm mt-1">{errors.linkedin.message}</p>
+        )}
+      </div>
+      <div className="mb-4">
+        <label
+          htmlFor="github"
+          className="block text-gray-700 font-semibold mb-2"
+        >
+          GitHub Link:
+        </label>
+        <input
+          type="text"
+          id="github"
+          className={`w-full p-3 border ${
+            errors.github ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("github", {
+            validate: (value) =>
+              !value ||
+              /^(https?:\/\/)?(www\.)?github\.com\/.*$/.test(value) ||
+              "Invalid GitHub URL",
+          })}
+        />
+        {errors.github && (
+          <p className="text-red-500 text-sm mt-1">{errors.github.message}</p>
+        )}
+      </div>
+      <div className="mb-4">
+        <label
+          htmlFor="social_media"
+          className="block text-gray-700 font-semibold mb-2"
+        >
+          Social Media Link
+        </label>
+        <input
+          type="text"
+          id="social_media"
+          className={`w-full p-3 border ${
+            errors.social_media ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
+          {...register("social_media", {
+            validate: (value) =>
+              !value ||
+              /^(https?:\/\/)?.*$/.test(value) ||
+              "Invalid Social Media URL",
+          })}
+        />
+        {errors.social_media && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.social_media.message}
+          </p>
+        )}
+      </div>
+      <div className="mb-4">
+        <label
+          htmlFor="job_freelance"
+          className="block text-gray-700 font-semibold mb-2"
+        >
+          Job / Freelance:
+        </label>
+        <select
+          id="job_freelance"
+          className={`w-full p-3 border 
+          
+           rounded-lg`}
+          {...register("job_freelance")}
+        >
+          <option value="">Select</option>
+          <option value="job">Job</option>
+          <option value="freelance">Freelance</option>
+        </select>
+        <div className="mb-4">
+          <label className="block text-gray-700 font-semibold my-2">
+            <input
+              type="checkbox"
+              onChange={handleAcknowledgmentChange}
+              checked={acknowledged}
+            />{" "}
+            I acknowledge the information provided is correct.
+          </label>
+        </div>
+      </div>
+    </div>
+  );
+
   const closeModal = () => {
     setShowModal(false);
+  };
+  const handleNext = async () => {
+    const valid = await trigger();
+    if (valid) {
+      setCurrentScreen(currentScreen + 1);
+    }
+  };
+
+  const handlePrevious = () => {
+    setCurrentScreen(currentScreen - 1);
+  };
+  const handleAcknowledgmentChange = (e) => {
+    setAcknowledged(e.target.checked);
   };
   return (
     <div className="w-8/12 mx-auto mt-10 p-8 border border-gray-300 rounded-lg shadow-lg bg-lightblue">
       <h2 className="text-3xl font-bold mb-6 text-center">Registration Form</h2>
       {message && <p className="mb-4 text-center text-green-500">{message}</p>}
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         {currentScreen === 1 && renderScreenOne()}
         {currentScreen === 2 && renderScreenTwo()}
         {currentScreen === 3 && renderScreenThree()}
+        {currentScreen === 4 && renderScreenFour()}
         <div className="flex justify-between mt-4">
+          {currentScreen === 1 && <div></div>}
           {currentScreen > 1 && (
             <button
               type="button"
               className="bg-gray-500 text-white py-2 px-4 rounded-lg"
-              onClick={() => setCurrentScreen(currentScreen - 1)}
+              onClick={handlePrevious}
             >
               Previous
             </button>
           )}
-          {currentScreen < 3 ? (
+          {currentScreen < 4 ? (
             <button
               type="button"
               className="bg-blue-500 text-white py-2 px-4 rounded-lg"
-              onClick={() => setCurrentScreen(currentScreen + 1)}
+              onClick={handleNext}
             >
               Next
             </button>
           ) : (
-            <button
-              type="submit"
-              className="bg-green-500 text-white py-2 px-4 rounded-lg"
-              disabled={!acknowledged}
-            >
-              Register
-            </button>
+            <div className="">
+              <button
+                type="submit"
+                className="bg-green-500 text-white py-2 px-4 rounded-lg"
+                disabled={!acknowledged}
+              >
+                Register
+              </button>
+            </div>
           )}
         </div>
       </form>
+
       {showModal && <SuccessModal message={message} onClose={closeModal} />}
     </div>
   );

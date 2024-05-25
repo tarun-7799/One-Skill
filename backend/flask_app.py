@@ -22,9 +22,13 @@ def registration():
         minors = request.json["skills"].get("minors", [])
         current_ctc = request.json["current_ctc"]
         expected_ctc = request.json["expected_ctc"]
-
+        linkedin = request.json["linkedin"]
+        github = request.json["github"]
+        social_media = request.json["social_media"]
+        job_freelance = request.json["job_freelance"]
+        
         users = Users()
-        message = users.add_job_seeker(name, email, mobile, password, dob, gender, major,minors, experience, image, jobRole, current_ctc,expected_ctc)
+        message = users.add_job_seeker(name, email, mobile, password, dob, gender, major,minors, experience, image, jobRole, current_ctc,expected_ctc,linkedin,github,social_media,job_freelance)
 
         return jsonify({"message": message}), 200
     except KeyError as e:
@@ -78,18 +82,23 @@ def get_all_job_seekers():
 @app.put("/updateJobSeekerDetails")
 def update_details():
     try:
-        data = request.json
-        email = data.get("email")
-        major = data.get("skills").get("major")
-        minors = data.get("skills").get("minors", [])
-        experience = data.get("experience")
-        image = data.get("image")
-        jobRole = data.get("jobRole")
-        current_ctc = data.get("current_ctc")
-        expected_ctc = data.get("expected_ctc")
-
+        email = request.json["email"]
+        skills = request.json["skills"]
+        experience = request.json["experience"]
+        image = request.json["image"]
+        jobRole = request.json["jobRole"]
+        major = request.json["skills"]["major"]
+        minors = request.json["skills"].get("minors", [])
+        current_ctc = request.json["current_ctc"]
+        expected_ctc = request.json["expected_ctc"]
+        linkedin = request.json["linkedin"]
+        github = request.json["github"]
+        social_media = request.json["social_media"]
+        job_freelance = request.json["job_freelance"]
+        
+        
         users = Users()
-        message = users.update_job_seeker_details(email, major, minors, experience, image, jobRole, current_ctc, expected_ctc)
+        message = users.update_job_seeker_details(email, major, minors, experience, image, jobRole, current_ctc, expected_ctc,linkedin,github,social_media,job_freelance)
 
         return jsonify({"message": message}), 200
     except KeyError as e:
