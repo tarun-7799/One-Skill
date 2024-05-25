@@ -18,6 +18,8 @@ const Registration = () => {
   const [acknowledged, setAcknowledged] = useState(false);
   const [message, setMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [otherLinks, setOtherLinks] = useState([{ platform: "", link: "" }]);
+
   const handleAddMinorSkill = () => {
     setMinorSkills([...minorSkills, ""]);
   };
@@ -32,7 +34,6 @@ const Registration = () => {
     }
     return age;
   };
-
   const onSubmit = async (data) => {
     const formattedDob = data.dob ? data.dob.toLocaleDateString("en-GB") : "";
     const requestData = {
@@ -43,6 +44,12 @@ const Registration = () => {
         major: data.majorSkill || "",
         minors: data.minorSkills || [""],
       },
+      other_links: otherLinks.reduce((acc, link) => {
+        if (link.platform && link.link) {
+          acc[link.platform] = link.link;
+        }
+        return acc;
+      }, {}),
     };
 
     try {
@@ -62,12 +69,48 @@ const Registration = () => {
         setMessage(result.message);
         setShowModal(true);
       } else {
-        setMessage("Fail to submit: " + result.message);
+        setMessage("Failed to submit: " + result.message);
       }
     } catch (error) {
       setMessage("Failed to submit: " + error.message);
     }
   };
+
+  // const onSubmit = async (data) => {
+  //   const formattedDob = data.dob ? data.dob.toLocaleDateString("en-GB") : "";
+  //   const requestData = {
+  //     ...data,
+  //     dob: formattedDob,
+  //     mobile: data.mobile.toString(),
+  //     skills: {
+  //       major: data.majorSkill || "",
+  //       minors: data.minorSkills || [""],
+  //     },
+  //   };
+
+  //   try {
+  //     const response = await fetch(
+  //       "http://127.0.0.1:5000/jobSeekerRegistration",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(requestData),
+  //       }
+  //     );
+  //     const result = await response.json();
+
+  //     if (response.ok) {
+  //       setMessage(result.message);
+  //       setShowModal(true);
+  //     } else {
+  //       setMessage("Fail to submit: " + result.message);
+  //     }
+  //   } catch (error) {
+  //     setMessage("Failed to submit: " + error.message);
+  //   }
+  // };
 
   const renderScreenOne = () => (
     <div>
@@ -412,27 +455,59 @@ const Registration = () => {
       </div>
       <div className="mb-4">
         <label
-          htmlFor="social_media"
+          htmlFor="other_links"
           className="block text-gray-700 font-semibold mb-2"
         >
-          Social Media Link
+          Other Links
         </label>
-        <input
-          type="text"
-          id="social_media"
-          className={`w-full p-3 border ${
-            errors.social_media ? "border-red-500" : "border-gray-300"
-          } rounded-lg`}
-          {...register("social_media", {
-            validate: (value) =>
-              !value ||
-              /^(https?:\/\/)?.*$/.test(value) ||
-              "Invalid Social Media URL",
-          })}
-        />
-        {errors.social_media && (
+        {otherLinks.map((link, index) => (
+          <div key={index} className="flex mb-2">
+            <input
+              type="text"
+              placeholder="Platform (e.g., insta, fb)"
+              className={`w-1/3 p-3 border ${
+                errors.other_links && errors.other_links.platform
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-lg mr-2`}
+              value={link.platform}
+              onChange={(e) =>
+                handleLinkChange(index, "platform", e.target.value)
+              }
+            />
+            <input
+              type="text"
+              placeholder="Link"
+              className={`w-2/3 p-3 border ${
+                errors.other_links && errors.other_links.link
+                  ? "border-red-500"
+                  : "border-gray-300"
+              } rounded-lg`}
+              value={link.link}
+              onChange={(e) => handleLinkChange(index, "link", e.target.value)}
+            />
+            {index > 0 && (
+              <button
+                type="button"
+                className="bg-red-500 text-white py-2 px-4 rounded-lg ml-2"
+                onClick={() => handleRemoveLink(index)}
+              >
+                Remove
+              </button>
+            )}
+          </div>
+        ))}
+        <button
+          type="button"
+          className="bg-blue-500 text-white py-2 px-4 rounded-lg"
+          onClick={handleAddLink}
+        >
+          Add Link
+        </button>
+        {errors.other_links && (
           <p className="text-red-500 text-sm mt-1">
-            {errors.social_media.message}
+            {errors.other_links.platform?.message ||
+              errors.other_links.link?.message}
           </p>
         )}
       </div>
@@ -445,28 +520,141 @@ const Registration = () => {
         </label>
         <select
           id="job_freelance"
-          className={`w-full p-3 border 
-          
-           rounded-lg`}
+          className={`w-full p-3 border ${
+            errors.job_freelance ? "border-red-500" : "border-gray-300"
+          } rounded-lg`}
           {...register("job_freelance")}
         >
           <option value="">Select</option>
           <option value="job">Job</option>
           <option value="freelance">Freelance</option>
         </select>
-        <div className="mb-4">
-          <label className="block text-gray-700 font-semibold my-2">
-            <input
-              type="checkbox"
-              onChange={handleAcknowledgmentChange}
-              checked={acknowledged}
-            />{" "}
-            I acknowledge the information provided is correct.
-          </label>
-        </div>
+        {errors.job_freelance && (
+          <p className="text-red-500 text-sm mt-1">
+            {errors.job_freelance.message}
+          </p>
+        )}
+      </div>
+      <div className="mb-4">
+        <label className="block text-gray-700 font-semibold my-2">
+          <input
+            type="checkbox"
+            onChange={handleAcknowledgmentChange}
+            checked={acknowledged}
+          />{" "}
+          I acknowledge the information provided is correct.
+        </label>
       </div>
     </div>
   );
+
+  // const renderScreenFour = () => (
+  //   <div>
+  //     <div className="mb-4">
+  //       <label
+  //         htmlFor="linkedin"
+  //         className="block text-gray-700 font-semibold mb-2"
+  //       >
+  //         LinkedIn Link:
+  //       </label>
+  //       <input
+  //         type="text"
+  //         id="linkedin"
+  //         className={`w-full p-3 border ${
+  //           errors.linkedin ? "border-red-500" : "border-gray-300"
+  //         } rounded-lg`}
+  //         {...register("linkedin", {
+  //           validate: (value) =>
+  //             !value ||
+  //             /^(https?:\/\/)?([\w\d]+\.)?linkedin\.com\/.*$/.test(value) ||
+  //             "Invalid LinkedIn URL",
+  //         })}
+  //       />
+  //       {errors.linkedin && (
+  //         <p className="text-red-500 text-sm mt-1">{errors.linkedin.message}</p>
+  //       )}
+  //     </div>
+  //     <div className="mb-4">
+  //       <label
+  //         htmlFor="github"
+  //         className="block text-gray-700 font-semibold mb-2"
+  //       >
+  //         GitHub Link:
+  //       </label>
+  //       <input
+  //         type="text"
+  //         id="github"
+  //         className={`w-full p-3 border ${
+  //           errors.github ? "border-red-500" : "border-gray-300"
+  //         } rounded-lg`}
+  //         {...register("github", {
+  //           validate: (value) =>
+  //             !value ||
+  //             /^(https?:\/\/)?(www\.)?github\.com\/.*$/.test(value) ||
+  //             "Invalid GitHub URL",
+  //         })}
+  //       />
+  //       {errors.github && (
+  //         <p className="text-red-500 text-sm mt-1">{errors.github.message}</p>
+  //       )}
+  //     </div>
+  //     <div className="mb-4">
+  //       <label
+  //         htmlFor="social_media"
+  //         className="block text-gray-700 font-semibold mb-2"
+  //       >
+  //         Social Media Link
+  //       </label>
+  //       <input
+  //         type="text"
+  //         id="social_media"
+  //         className={`w-full p-3 border ${
+  //           errors.social_media ? "border-red-500" : "border-gray-300"
+  //         } rounded-lg`}
+  //         {...register("social_media", {
+  //           validate: (value) =>
+  //             !value ||
+  //             /^(https?:\/\/)?.*$/.test(value) ||
+  //             "Invalid Social Media URL",
+  //         })}
+  //       />
+  //       {errors.social_media && (
+  //         <p className="text-red-500 text-sm mt-1">
+  //           {errors.social_media.message}
+  //         </p>
+  //       )}
+  //     </div>
+  //     <div className="mb-4">
+  //       <label
+  //         htmlFor="job_freelance"
+  //         className="block text-gray-700 font-semibold mb-2"
+  //       >
+  //         Job / Freelance:
+  //       </label>
+  //       <select
+  //         id="job_freelance"
+  //         className={`w-full p-3 border
+
+  //          rounded-lg`}
+  //         {...register("job_freelance")}
+  //       >
+  //         <option value="">Select</option>
+  //         <option value="job">Job</option>
+  //         <option value="freelance">Freelance</option>
+  //       </select>
+  //       <div className="mb-4">
+  //         <label className="block text-gray-700 font-semibold my-2">
+  //           <input
+  //             type="checkbox"
+  //             onChange={handleAcknowledgmentChange}
+  //             checked={acknowledged}
+  //           />{" "}
+  //           I acknowledge the information provided is correct.
+  //         </label>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
 
   const closeModal = () => {
     setShowModal(false);
@@ -480,6 +668,21 @@ const Registration = () => {
 
   const handlePrevious = () => {
     setCurrentScreen(currentScreen - 1);
+  };
+  const handleAddLink = () => {
+    setOtherLinks([...otherLinks, { platform: "", link: "" }]);
+  };
+
+  const handleRemoveLink = (index) => {
+    const updatedLinks = [...otherLinks];
+    updatedLinks.splice(index, 1);
+    setOtherLinks(updatedLinks);
+  };
+
+  const handleLinkChange = (index, key, value) => {
+    const updatedLinks = [...otherLinks];
+    updatedLinks[index][key] = value;
+    setOtherLinks(updatedLinks);
   };
   const handleAcknowledgmentChange = (e) => {
     setAcknowledged(e.target.checked);

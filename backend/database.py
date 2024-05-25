@@ -11,7 +11,7 @@ class Users:
     def get_job_seekers(self):
         users = self.db.child('JobSeekers').get().val() or {}
         return users
-    def add_job_seeker(self, name, email, mobile, password, dob, gender, major, minors, experience, image, jobRole, current_ctc, expected_ctc,linkedin,github,social_media,job_freelance):
+    def add_job_seeker(self, name, email, mobile, password, dob, gender, major, minors, experience, image, jobRole, current_ctc, expected_ctc,linkedin,github,other_links,job_freelance):
     # Check if the email already exists
         users = self.get_job_seekers()
         for user_id, user_data in users.items():
@@ -21,7 +21,7 @@ class Users:
         # If email doesn't exist, add the user
         if not isinstance(minors, list):
             minors = [minors]
-    
+        
         data = {
         "name": name,
         "email": email,
@@ -37,7 +37,7 @@ class Users:
         "expected_ctc": expected_ctc,
         "linkedin":linkedin,
         "github":github,
-        "social_media":social_media,
+        "other_links":other_links,
         "job_freelance":job_freelance
         }
     
@@ -62,7 +62,7 @@ class Users:
                     return "Invalid password"
         return "User not found"
 
-    def update_job_seeker_details(self, email, major, minors, experience, image, jobRole, current_ctc, expected_ctc,linkedin,github,social_media,job_freelance):
+    def update_job_seeker_details(self, email, major, minors, experience, image, jobRole, current_ctc, expected_ctc,linkedin,github,other_links,job_freelance):
         users = self.get_job_seekers()
         for user_id, user_data in users.items():
             if user_data["email"] == email:
@@ -79,7 +79,7 @@ class Users:
                     "expected_ctc": expected_ctc,
                     "linkedin":linkedin,
                     "github":github,
-                    "social_media":social_media,
+                    "other_links":other_links,
                     "job_freelance":job_freelance
                 })
                 return "User details updated successfully"
