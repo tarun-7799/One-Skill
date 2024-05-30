@@ -2,9 +2,12 @@ import React, { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import SuccessModal from "./SuccessModal";
+import SuccessModal from "../components/SuccessModal";
+import { useNavigate } from "react-router-dom";
 
 const Registration = () => {
+  const navigate = useNavigate();
+
   const {
     register,
     handleSubmit,
@@ -68,6 +71,7 @@ const Registration = () => {
       if (response.ok) {
         setMessage(result.message);
         setShowModal(true);
+        navigate("Login");
       } else {
         setMessage("Failed to submit: " + result.message);
       }
@@ -75,42 +79,6 @@ const Registration = () => {
       setMessage("Failed to submit: " + error.message);
     }
   };
-
-  // const onSubmit = async (data) => {
-  //   const formattedDob = data.dob ? data.dob.toLocaleDateString("en-GB") : "";
-  //   const requestData = {
-  //     ...data,
-  //     dob: formattedDob,
-  //     mobile: data.mobile.toString(),
-  //     skills: {
-  //       major: data.majorSkill || "",
-  //       minors: data.minorSkills || [""],
-  //     },
-  //   };
-
-  //   try {
-  //     const response = await fetch(
-  //       "http://127.0.0.1:5000/jobSeekerRegistration",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(requestData),
-  //       }
-  //     );
-  //     const result = await response.json();
-
-  //     if (response.ok) {
-  //       setMessage(result.message);
-  //       setShowModal(true);
-  //     } else {
-  //       setMessage("Fail to submit: " + result.message);
-  //     }
-  //   } catch (error) {
-  //     setMessage("Failed to submit: " + error.message);
-  //   }
-  // };
 
   const renderScreenOne = () => (
     <div>
@@ -547,114 +515,6 @@ const Registration = () => {
       </div>
     </div>
   );
-
-  // const renderScreenFour = () => (
-  //   <div>
-  //     <div className="mb-4">
-  //       <label
-  //         htmlFor="linkedin"
-  //         className="block text-gray-700 font-semibold mb-2"
-  //       >
-  //         LinkedIn Link:
-  //       </label>
-  //       <input
-  //         type="text"
-  //         id="linkedin"
-  //         className={`w-full p-3 border ${
-  //           errors.linkedin ? "border-red-500" : "border-gray-300"
-  //         } rounded-lg`}
-  //         {...register("linkedin", {
-  //           validate: (value) =>
-  //             !value ||
-  //             /^(https?:\/\/)?([\w\d]+\.)?linkedin\.com\/.*$/.test(value) ||
-  //             "Invalid LinkedIn URL",
-  //         })}
-  //       />
-  //       {errors.linkedin && (
-  //         <p className="text-red-500 text-sm mt-1">{errors.linkedin.message}</p>
-  //       )}
-  //     </div>
-  //     <div className="mb-4">
-  //       <label
-  //         htmlFor="github"
-  //         className="block text-gray-700 font-semibold mb-2"
-  //       >
-  //         GitHub Link:
-  //       </label>
-  //       <input
-  //         type="text"
-  //         id="github"
-  //         className={`w-full p-3 border ${
-  //           errors.github ? "border-red-500" : "border-gray-300"
-  //         } rounded-lg`}
-  //         {...register("github", {
-  //           validate: (value) =>
-  //             !value ||
-  //             /^(https?:\/\/)?(www\.)?github\.com\/.*$/.test(value) ||
-  //             "Invalid GitHub URL",
-  //         })}
-  //       />
-  //       {errors.github && (
-  //         <p className="text-red-500 text-sm mt-1">{errors.github.message}</p>
-  //       )}
-  //     </div>
-  //     <div className="mb-4">
-  //       <label
-  //         htmlFor="social_media"
-  //         className="block text-gray-700 font-semibold mb-2"
-  //       >
-  //         Social Media Link
-  //       </label>
-  //       <input
-  //         type="text"
-  //         id="social_media"
-  //         className={`w-full p-3 border ${
-  //           errors.social_media ? "border-red-500" : "border-gray-300"
-  //         } rounded-lg`}
-  //         {...register("social_media", {
-  //           validate: (value) =>
-  //             !value ||
-  //             /^(https?:\/\/)?.*$/.test(value) ||
-  //             "Invalid Social Media URL",
-  //         })}
-  //       />
-  //       {errors.social_media && (
-  //         <p className="text-red-500 text-sm mt-1">
-  //           {errors.social_media.message}
-  //         </p>
-  //       )}
-  //     </div>
-  //     <div className="mb-4">
-  //       <label
-  //         htmlFor="job_freelance"
-  //         className="block text-gray-700 font-semibold mb-2"
-  //       >
-  //         Job / Freelance:
-  //       </label>
-  //       <select
-  //         id="job_freelance"
-  //         className={`w-full p-3 border
-
-  //          rounded-lg`}
-  //         {...register("job_freelance")}
-  //       >
-  //         <option value="">Select</option>
-  //         <option value="job">Job</option>
-  //         <option value="freelance">Freelance</option>
-  //       </select>
-  //       <div className="mb-4">
-  //         <label className="block text-gray-700 font-semibold my-2">
-  //           <input
-  //             type="checkbox"
-  //             onChange={handleAcknowledgmentChange}
-  //             checked={acknowledged}
-  //           />{" "}
-  //           I acknowledge the information provided is correct.
-  //         </label>
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
 
   const closeModal = () => {
     setShowModal(false);
